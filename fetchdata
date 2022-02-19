@@ -1,0 +1,56 @@
+maruti_tweets = userTimeline("Maruti_suzuki", n=1000,cainfo="cacert.pem")
+hyundai_tweets = userTimeline("HyundaiIndia", n=1000,cainfo="cacert.pem")
+tata_tweets = userTimeline("TataMotors", n=1000,cainfo="cacert.pem")
+toyota_tweets = userTimeline("Toyota_India", n=1000,cainfo="cacert.pem")
+# get text
+maruti_txt = sapply(maruti_tweets, function(x) x$getText())
+hyundai_txt = sapply(hyundai_tweets, function(x) x$getText())
+tata_txt = sapply(tata_tweets, function(x) x$getText())
+toyota_txt = sapply(toyota_tweets, function(x) x$getText())
+clean.text = function(x)
+
+{
+   # tolower
+   x = tolower(x)
+   # remove rt
+   x = gsub("rt", "", x)
+   # remove at
+   x = gsub("@\\w+", "", x)
+   # remove punctuation
+   x = gsub("[[:punct:]]", "", x)
+   # remove numbers
+   x = gsub("[[:digit:]]", "", x)
+   # remove links http
+   x = gsub("http\\w+", "", x)
+   # remove tabs
+   x = gsub("[ |\t]{2,}", "", x)
+   # remove blank spaces at the beginning
+   x = gsub("^ ", "", x)
+   # remove blank spaces at the end
+   x = gsub(" $", "", x)
+   return(x)
+}
+# clean texts
+maruti_clean = clean.text(maruti_txt)
+hyundai_clean = clean.text(hyundai_txt)
+tata_clean = clean.text(tata_txt)
+toyota_clean = clean.text(toyota_txt)
+maruti = paste(maruti_clean, collapse=" ")
+hyundai= paste(hyundai_clean, collapse=" ")
+tata= paste(tata_clean, collapse=" ")
+toyota= paste(toyota_clean, collapse=" ")
+# put ehyundaiything in a single vector
+all = c(maruti, hyundai, tata, toyota)
+# remove stop-words
+all = removeWords(all,
+c(stopwords("english"), "maruti", "tata", "hyundai", "toyota"))
+# create corpus
+corpus = Corpus(VectorSource(all))
+# create term-document matrix
+tdm = TermDocumentMatrix(corpus)
+# convert as matrix
+tdm = as.matrix(tdm)
+# add column names
+colnames(tdm) = c("MARUTI", "HYUNDAI", "TATA", "TOYOTA")
+# comparison cloud
+comparison.cloud(tdm, random.order=FALSE,colors = c("#00B2FF", "red",     #FF0099","#6600CC"),max.words=500)
